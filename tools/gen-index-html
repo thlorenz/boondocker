@@ -1,0 +1,20 @@
+#!/usr/bin/env node
+'use strict'
+
+const fs = require('fs')
+const path = require('path')
+
+const GOOGLE_API = process.env.GOOGLE_API
+
+if (!GOOGLE_API) {
+  console.error('Need to have "GOOGLE_API" var in environment')
+  process.exit(1)
+}
+
+const index_html_in = path.join(__dirname, '..', 'web', 'index.html.in')
+const index_html = path.join(__dirname, '..', 'web', 'index.html')
+
+const in_src = fs.readFileSync(index_html_in).toString()
+const out_src = in_src.replace('{{GOOGLE_API}}', GOOGLE_API)
+
+fs.writeFileSync(index_html, out_src)
