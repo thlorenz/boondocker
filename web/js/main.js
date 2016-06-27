@@ -7,6 +7,7 @@ let map
 let marker
 let lastinfowindow
 
+let icons
 const campsites = require('../../data/campsites.json')
 
 function getCurrentLatLng(cb) {
@@ -22,6 +23,11 @@ function getCurrentLatLng(cb) {
     cb(null, { lat: p.coords.latitude, lng: p.coords.longitude })
   }
   navigator.geolocation.getCurrentPosition(onposition)
+}
+
+function markerIcon(type) {
+  const icon = icons[type] || icons.alt
+  return icon
 }
 
 function addInfoWindow(marker, message) {
@@ -40,7 +46,7 @@ function addInfoWindow(marker, message) {
   google.maps.event.addListener(marker, 'click', onmarkerClick)
 }
 
-function addMarker(p, label, message) {
+function addMarker(p, label, message, type) {
   marker = new maps.Marker({
       position  : new maps.LatLng(p.lat, p.lng)
     , draggable : true
@@ -49,6 +55,7 @@ function addMarker(p, label, message) {
     , map       : map
   })
   addInfoWindow(marker, message)
+  marker.setIcon(markerIcon(type))
 }
 
 function getBounds(map) {
@@ -69,20 +76,37 @@ function facilitiesWithinBounds({ ne, sw }, facilities) {
     return minlat < lat && lat < maxlat
         && minlng < lng && lng < maxlng
   }
-  console.log({ lat: { minlat, maxlat }, lng: { minlng, maxlng } })
   return facilities.filter(withinBounds)
+}
+
+function description(x) {
+  return `
+    (${x.FacilityLatitude}, ${x.FacilityLongitude}) - ${x.LegacyFacilityID}
+
+    ${x.FacilityDescription}
+  `
 }
 
 function updateMarkers(bounds, map) {
   facilitiesWithinBounds(bounds, campsites)
-    .forEach(x => addMarker({
-        lat: x.FacilityLatitude
-      , lng: x.FacilityLongitude }, '^', x.FacilityDescription))
+    .forEach(x => addMarker(
+        { lat: x.FacilityLatitude, lng: x.FacilityLongitude }
+      , '^'
+      , description(x)
+      , (x.LegacyFacilityID || '').toString().toLowerCase()
+    ))
 }
 
 function initMap() {
   maps = google.maps
   const MapTypeId = maps.MapTypeId
+  icons = {
+      blm : { url: 'img/blm.png', scaledSize: new maps.Size(20, 20) }
+    , fs  : { url: 'img/fs.png', scaledSize: new maps.Size(20, 20) }
+    , fws : { url: 'img/fws.png', scaledSize: new maps.Size(25, 25) }
+    , nps : { url: 'img/nps.png', scaledSize: new maps.Size(25, 25) }
+    , alt : { url: 'img/camping.png', scaledSize: new maps.Size(25, 25) }
+  }
 
   getCurrentLatLng(onlatlng)
 
@@ -92,7 +116,7 @@ function initMap() {
     map = new maps.Map(document.getElementById('map'), {
         center: latlng
       , scrollwheel : true
-      , zoom        : 12
+      , zoom        : 8
       , mapTypeControlOptions: {
           mapTypeIds: [
             MapTypeId.ROADMAP
@@ -114,9 +138,3 @@ function initMap() {
 }
 
 window.initMap = initMap
-
-/*
-$.get("result.php?nelat=" + ne.lat() + "&nelng=" + ne.lng() + "&swlat=" + sw.lat() + "&swlng=" + sw.lng(), function(poi) {
-  addMarkers(JSON.parse(poi))
-})
-*/
