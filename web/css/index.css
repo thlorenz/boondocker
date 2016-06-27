@@ -1,4 +1,10 @@
+.appname {
+  margin-top: -8px;
+}
 .map {
-  width: 800px;
-  height: 800px;
+  position : absolute;
+  top      : 20px;
+  right    : 0;
+  bottom   : 0;
+  left     : 0;
 }

@@ -8,6 +8,7 @@
   <script async defer src="https://maps.googleapis.com/maps/api/js?key={{GOOGLE_API}}&callback=initMap"></script>
 </head>
 <body>
+  <h3 class="appname">boondocker</h3>
   <div id="map" class="map"></div>
 </body>
 </html>
