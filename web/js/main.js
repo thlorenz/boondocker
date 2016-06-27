@@ -2,10 +2,12 @@
 /* global google */
 const TESTING = true
 
-window.initMap = initMap
 let maps
 let map
 let marker
+let lastinfowindow
+
+const campsites = require('../../data/campsites.json')
 
 function getCurrentLatLng(cb) {
   if (TESTING) {
@@ -22,7 +24,23 @@ function getCurrentLatLng(cb) {
   navigator.geolocation.getCurrentPosition(onposition)
 }
 
-function addMarker(p, label) {
+function addInfoWindow(marker, message) {
+  const infowindow = new google.maps.InfoWindow({
+    content: message
+  })
+
+  function onmarkerClick() {
+    if (lastinfowindow !== undefined) {
+        lastinfowindow.close()
+    }
+    infowindow.open(map, marker)
+    lastinfowindow = infowindow
+  }
+
+  google.maps.event.addListener(marker, 'click', onmarkerClick)
+}
+
+function addMarker(p, label, message) {
   marker = new maps.Marker({
       position  : new maps.LatLng(p.lat, p.lng)
     , draggable : true
@@ -30,11 +48,39 @@ function addMarker(p, label) {
     , label     : label || 'x'
     , map       : map
   })
-  console.log(marker)
+  addInfoWindow(marker, message)
+}
+
+function getBounds(map) {
+  const ne = map.getBounds().getNorthEast()
+  const sw = map.getBounds().getSouthWest()
+  return { ne, sw }
+}
+
+function facilitiesWithinBounds({ ne, sw }, facilities) {
+  const minlat = sw.lat()
+  const maxlat = ne.lat()
+  const minlng = sw.lng()
+  const maxlng = ne.lng()
+
+  function withinBounds(f) {
+    const lat = f.FacilityLatitude
+    const lng = f.FacilityLongitude
+    return minlat < lat && lat < maxlat
+        && minlng < lng && lng < maxlng
+  }
+  console.log({ lat: { minlat, maxlat }, lng: { minlng, maxlng } })
+  return facilities.filter(withinBounds)
+}
+
+function updateMarkers(bounds, map) {
+  facilitiesWithinBounds(bounds, campsites)
+    .forEach(x => addMarker({
+        lat: x.FacilityLatitude
+      , lng: x.FacilityLongitude }, '^', x.FacilityDescription))
 }
 
 function initMap() {
-  console.error(arguments)
   maps = google.maps
   const MapTypeId = maps.MapTypeId
 
@@ -45,8 +91,8 @@ function initMap() {
 
     map = new maps.Map(document.getElementById('map'), {
         center: latlng
-      , scrollwheel : true,
-        zoom        : 7
+      , scrollwheel : true
+      , zoom        : 12
       , mapTypeControlOptions: {
           mapTypeIds: [
             MapTypeId.ROADMAP
@@ -56,21 +102,21 @@ function initMap() {
         ]
       }
     })
-    addMarker(latlng, 'you are here')
-    console.log(map)
+
+    function onmapIdle() {
+      const bounds = getBounds(map)
+      updateMarkers(bounds, map)
+    }
+
+    addMarker(latlng, '.', 'you are here')
+    map.addListener('idle', onmapIdle)
   }
 }
+
+window.initMap = initMap
+
 /*
- *
-function initMap() {
-
-    map.addListener('idle', function() {
-        ne = map.getBounds().getNorthEast()
-        sw = map.getBounds().getSouthWest()
-        $.get("result.php?nelat=" + ne.lat() + "&nelng=" + ne.lng() + "&swlat=" + sw.lat() + "&swlng=" + sw.lng(), function(poi) {
-            addMarkers(JSON.parse(poi))
-        })
-    })
-}
-
+$.get("result.php?nelat=" + ne.lat() + "&nelng=" + ne.lng() + "&swlat=" + sw.lat() + "&swlng=" + sw.lng(), function(poi) {
+  addMarkers(JSON.parse(poi))
+})
 */
