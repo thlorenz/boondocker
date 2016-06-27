@@ -1,0 +1,14 @@
+#!/bin/sh
+
+CURRENT_BRANCH=`git rev-parse --abbrev-ref HEAD`
+
+rm -rf web/index.html web/build/bundle.js         && \
+git checkout gh-pages                             && \
+git reset --hard master                           && \
+make bundle-min                                   && \
+make index                                        && \
+git add -f web/index.html web/build/bundle.js     && \
+git commit -m "ghp: adding bundle and index.html" && \
+git push -f origin gh-pages                       && \
+make clean                                        && \
+git checkout $CURRENT_BRANCH
