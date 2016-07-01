@@ -9,9 +9,11 @@ EXCLUDE_MODULES=-x react -x react-dom -x redux
 ENTRY=web/js/main.js
 OUTPUT=web/build/bundle.js
 
+PORT:=33333
+
 LIVERELOAD=-p livereactload
 
-build: bundle, index
+build: bundle index
 
 clean:
 	rm -rf $(OUTPUT) ./web/index.html
@@ -45,3 +47,8 @@ vendor:
 
 vendor-raw:
 	$(BROWSERIFY) $(REQUIRE_VENDORS) -o web/build/vendor.js
+
+serve:
+	cd web                        && \
+	echo http://localhost:$(PORT) && \
+	python -m SimpleHTTPServer $(PORT)
