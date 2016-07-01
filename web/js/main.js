@@ -4,11 +4,52 @@ const TESTING = true
 
 let maps
 let map
-let marker
 let lastinfowindow
 
-let icons
+const icons = {
+    blm : 'arrow'
+  , fs  : 'circle'
+  , fws : 'circle'
+  , nps : 'circle'
+}
+
+const prices = {
+    free        : 'lightblue'
+  , supercheap  : 'green'
+  , cheap       : 'darkblue'
+  , expensive   : 'red'
+  , prohibitive : 'black'
+}
+
+const scaleZoom = [
+    0
+  , 1   // 1
+  , 1   // 2
+  , 1   // 3
+  , 1   // 4
+  , 1   // 5
+  , 1   // 6
+  , 2   // 7
+  , 3.5 // 8
+  , 4   // 9
+  , 5   // 10
+  , 6   // 11
+  , 7   // 12
+  , 8   // 13
+  , 9   // 14
+  , 10  // 15
+  , 11  // 16
+  , 12  // 17
+  , 13  // 18
+  , 14  // 19
+  , 15  // 20
+]
+
 const campsites = require('../../data/campsites.json')
+
+function scaleFromZoom(zoom) {
+  return scaleZoom[zoom] || zoom
+}
 
 function getCurrentLatLng(cb) {
   if (TESTING) {
@@ -19,15 +60,26 @@ function getCurrentLatLng(cb) {
   }
   if (!('geolocation' in navigator)) return cb(new Error('No geolocation support'))
   function onposition(p) {
-    console.log(p)
     cb(null, { lat: p.coords.latitude, lng: p.coords.longitude })
   }
   navigator.geolocation.getCurrentPosition(onposition)
 }
 
-function markerIcon(type) {
-  const icon = icons[type] || icons.alt
-  return icon
+function markerIcon({ type, price, scale }) {
+  const icon = icons[type]
+  const path = icon === 'arrow'
+    ? maps.SymbolPath.FORWARD_CLOSED_ARROW
+    : maps.SymbolPath.CIRCLE
+  const color = prices[price] || 'lightblue'
+
+  return {
+      path
+    , scale
+    , fillColor: color
+    , fillOpacity: 0.6
+    , strokeColor: color
+    , strokeWeight: 1
+  }
 }
 
 function addInfoWindow(marker, message) {
@@ -46,16 +98,20 @@ function addInfoWindow(marker, message) {
   google.maps.event.addListener(marker, 'click', onmarkerClick)
 }
 
-function addMarker(p, label, message, type) {
-  marker = new maps.Marker({
-      position  : new maps.LatLng(p.lat, p.lng)
+function addMarker({ pos, label, message, type, scale, marker }) {
+  marker = marker || new maps.Marker({
+      position  : new maps.LatLng(pos.lat, pos.lng)
     , draggable : true
     , zIndex    : 1000
-    , label     : label || 'x'
-    , map       : map
+    , label     : label || ''
   })
+  // the icon size adjusts depending on zoom
+  marker.setIcon(markerIcon({ type, price: 'cheap', scale }))
   addInfoWindow(marker, message)
-  marker.setIcon(markerIcon(type))
+  // force a marker refresh
+  marker.setMap(null)
+  marker.setMap(map)
+  return marker
 }
 
 function getBounds(map) {
@@ -88,25 +144,32 @@ function description(x) {
 }
 
 function updateMarkers(bounds, map) {
-  facilitiesWithinBounds(bounds, campsites)
-    .forEach(x => addMarker(
-        { lat: x.FacilityLatitude, lng: x.FacilityLongitude }
-      , '^'
-      , description(x)
-      , (x.LegacyFacilityID || '').toString().toLowerCase()
-    ))
+  const scale = scaleFromZoom(map.getZoom())
+  const inbounds = facilitiesWithinBounds(bounds, campsites)
+
+  // TODO: proper message in UI
+  if (inbounds.length > 1000) return console.error('Too many markers', inbounds.length)
+
+  inbounds
+    .forEach(x => (x.marker = addMarker({
+        pos: { lat: x.FacilityLatitude, lng: x.FacilityLongitude }
+      , label: ''
+      , type: (x.LegacyFacilityID || '').toString().toLowerCase()
+      , message: description(x)
+      , scale
+      , marker: x.marker
+    })))
+}
+
+function onzoomChanged() {
+  const bounds = getBounds(map)
+  updateMarkers(bounds, map)
 }
 
 function initMap() {
   maps = google.maps
+  window.maps = maps
   const MapTypeId = maps.MapTypeId
-  icons = {
-      blm : { url: 'img/blm.png', scaledSize: new maps.Size(20, 20) }
-    , fs  : { url: 'img/fs.png', scaledSize: new maps.Size(20, 20) }
-    , fws : { url: 'img/fws.png', scaledSize: new maps.Size(25, 25) }
-    , nps : { url: 'img/nps.png', scaledSize: new maps.Size(25, 25) }
-    , alt : { url: 'img/camping.png', scaledSize: new maps.Size(25, 25) }
-  }
 
   getCurrentLatLng(onlatlng)
 
@@ -132,8 +195,9 @@ function initMap() {
       updateMarkers(bounds, map)
     }
 
-    addMarker(latlng, '.', 'you are here')
     map.addListener('idle', onmapIdle)
+    map.addListener('zoom_changed', onzoomChanged)
+    window.map = map
   }
 }
 
