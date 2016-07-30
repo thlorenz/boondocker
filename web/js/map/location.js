@@ -1,9 +1,7 @@
 'use strict'
 
-const TESTING = true
-
 exports.getCurrentLatLng = function getCurrentLatLng(cb) {
-  if (TESTING) {
+  if (require('../testing')) {
     return cb(null, {
         lat: 33.311654
       , lng: -108.884622

@@ -6,6 +6,11 @@
   <link rel="stylesheet" href="css/index.css" type="text/css" media="screen" title="main css" charset="utf-8">
   <script src="build/bundle.js"></script>
   <script async defer src="https://maps.googleapis.com/maps/api/js?key={{GOOGLE_API}}&callback=initMap"></script>
+
+  <!-- needed for diagnosis in development -->
+  <script src="deps/json-human/crel.js"></script>
+  <script src="deps/json-human/json.human.js"></script>
+  <link rel="stylesheet" href="deps/json-human/json.human.css" type="text/css" media="screen" charset="utf-8">
 </head>
 <body>
   <h3 class="appname">boondocker</h3>

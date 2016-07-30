@@ -6,8 +6,8 @@ const EventEmitter = require('events').EventEmitter
 const getCurrentLatLng = require('./location').getCurrentLatLng
 
 const icons = {
-    blm : 'arrow'
-  , fs  : 'circle'
+    blm : 'up-arrow'
+  , fs  : 'down-arrow'
   , fws : 'circle'
   , nps : 'circle'
 }
@@ -36,14 +36,17 @@ class GoogleMarker extends EventEmitter {
   get lat()         { return this.position.lat }
   get lng()         { return this.position.lng }
   get description() { return this.info.description }
+  get directions()  { return this.info.directions }
   get link()        { return this.info.link }
 
   updateMarkerIcon() {
     const maps = google.maps
     const icon = icons[this.type]
-    const path = icon === 'arrow'
-      ? maps.SymbolPath.FORWARD_CLOSED_ARROW
+    const path =
+        icon === 'up-arrow'   ? maps.SymbolPath.FORWARD_CLOSED_ARROW
+      : icon === 'down-arrow' ? maps.SymbolPath.BACKWARD_CLOSED_ARROW
       : maps.SymbolPath.CIRCLE
+
     const color = prices[this.price] || 'lightblue'
 
     this._marker.setIcon({
@@ -61,8 +64,8 @@ class GoogleMarker extends EventEmitter {
     const maps = google.maps
     this._marker = new maps.Marker({
         position: new maps.LatLng(this.position.lat, this.position.lng)
-      , draggable : true
-      , zIndex    : 1000
+      , draggable : false
+      , zIndex    : 1
     })
     maps.event.addListener(this._marker, 'click', () => this.emit('clicked'))
   }
@@ -99,7 +102,7 @@ const scaling = [
  * and/or mocks for quicker testing.
  */
 class GoogleMap extends EventEmitter {
-  constructor({ getElement, zoom = 12 }) {
+  constructor({ getElement, zoom = 8 }) {
     super()
     this._getElement = getElement
     this._zoom = zoom
