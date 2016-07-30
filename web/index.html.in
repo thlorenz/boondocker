@@ -10,5 +10,6 @@
 <body>
   <h3 class="appname">boondocker</h3>
   <div id="map" class="map"></div>
+  <div id="content" class="content"></div>
 </body>
 </html>

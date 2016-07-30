@@ -2,9 +2,9 @@
 /* global google */
 const TESTING = true
 
+let content
 let maps
 let map
-let lastinfowindow
 
 const icons = {
     blm : 'arrow'
@@ -82,23 +82,23 @@ function markerIcon({ type, price, scale }) {
   }
 }
 
-function addInfoWindow(marker, message) {
-  const infowindow = new google.maps.InfoWindow({
-    content: message
-  })
-
+function registerContentUpdate(marker, x) {
   function onmarkerClick() {
-    if (lastinfowindow !== undefined) {
-        lastinfowindow.close()
-    }
-    infowindow.open(map, marker)
-    lastinfowindow = infowindow
-  }
+    content.innerHTML = `
+      <h3>${x.name}</h3>
+      <p>${x.id}</p>
+      <p><em>(${x.latitude}, ${x.longitude})</em></p>
 
+      <p>${x.description}<p>
+
+      <h5>Website</h5>
+      <a href="${x.link.url}">${x.link.title} (${x.link.provider})</a>
+    `
+  }
   google.maps.event.addListener(marker, 'click', onmarkerClick)
 }
 
-function addMarker({ pos, label, message, type, scale, marker }) {
+function addMarker({ pos, label, message, type, scale, marker, data }) {
   marker = marker || new maps.Marker({
       position  : new maps.LatLng(pos.lat, pos.lng)
     , draggable : true
@@ -107,7 +107,7 @@ function addMarker({ pos, label, message, type, scale, marker }) {
   })
   // the icon size adjusts depending on zoom
   marker.setIcon(markerIcon({ type, price: 'cheap', scale }))
-  addInfoWindow(marker, message)
+  registerContentUpdate(marker, data)
   // force a marker refresh
   marker.setMap(null)
   marker.setMap(map)
@@ -120,42 +120,34 @@ function getBounds(map) {
   return { ne, sw }
 }
 
-function facilitiesWithinBounds({ ne, sw }, facilities) {
+function entitiesWithinBounds({ ne, sw }, entities) {
   const minlat = sw.lat()
   const maxlat = ne.lat()
   const minlng = sw.lng()
   const maxlng = ne.lng()
 
-  function withinBounds(f) {
-    const lat = f.FacilityLatitude
-    const lng = f.FacilityLongitude
+  function withinBounds(e) {
+    const lat = e.latitude
+    const lng = e.longitude
     return minlat < lat && lat < maxlat
         && minlng < lng && lng < maxlng
   }
-  return facilities.filter(withinBounds)
-}
-
-function description(x) {
-  return `
-    (${x.FacilityLatitude}, ${x.FacilityLongitude}) - ${x.LegacyFacilityID}
-
-    ${x.FacilityDescription}
-  `
+  return entities.filter(withinBounds)
 }
 
 function updateMarkers(bounds, map) {
   const scale = scaleFromZoom(map.getZoom())
-  const inbounds = facilitiesWithinBounds(bounds, campsites)
+  const inbounds = entitiesWithinBounds(bounds, campsites)
 
   // TODO: proper message in UI
   if (inbounds.length > 1000) return console.error('Too many markers', inbounds.length)
 
   inbounds
     .forEach(x => (x.marker = addMarker({
-        pos: { lat: x.FacilityLatitude, lng: x.FacilityLongitude }
+        pos: { lat: x.latitude, lng: x.longitude }
       , label: ''
-      , type: (x.LegacyFacilityID || '').toString().toLowerCase()
-      , message: description(x)
+      , type: (x.legacyID || '').toString().toLowerCase()
+      , data: x
       , scale
       , marker: x.marker
     })))
@@ -167,6 +159,8 @@ function onzoomChanged() {
 }
 
 function initMap() {
+  content = document.getElementById('content')
+
   maps = google.maps
   window.maps = maps
   const MapTypeId = maps.MapTypeId
@@ -179,7 +173,7 @@ function initMap() {
     map = new maps.Map(document.getElementById('map'), {
         center: latlng
       , scrollwheel : true
-      , zoom        : 8
+      , zoom        : 12
       , mapTypeControlOptions: {
           mapTypeIds: [
             MapTypeId.ROADMAP

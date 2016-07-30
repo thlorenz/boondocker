@@ -4,7 +4,14 @@
 .map {
   position : absolute;
   top      : 20px;
-  right    : 0;
+  right    : 35%;
   bottom   : 0;
   left     : 0;
+}
+.content {
+  position : absolute;
+  top      : 20px;
+  right    : 0;
+  bottom   : 0;
+  left     : 70%;
 }
