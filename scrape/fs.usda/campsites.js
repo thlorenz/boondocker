@@ -135,14 +135,14 @@ function extractGlance(c) {
   tableParser(c)
   const tableEl = c('#centercol table[summary="this is the data table used for displaying Recreation Area At a Glance Information"]')
   if (!tableEl) return {}
-  const table = tableEl.parsetable(true, true, true)
+  const table = tableEl.parsetable(true, true, false)
   if (!table) return {}
   const keys = table[0]
   const values = table[1]
   if (!keys || !keys.length || !values || !values.length) return {}
   const acc = {}
   for (var i = 0; i < keys.length; i++) {
-    const k = camelcase(keys[i].toLowerCase())
+    const k = camelcase(keys[i].toLowerCase()).trim().replace(/\:$/, '')
     acc[k] = values[i]
   }
   return acc

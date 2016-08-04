@@ -60,6 +60,7 @@
     "livereactload": "~2.2.4",
     "react-tools": "~0.10.0",
     "react-transform": "0.0.3",
+    "tape": "~4.6.0",
     "uglifyjs": "~2.4.10",
     "watchify": "~3.7.0"
   },
