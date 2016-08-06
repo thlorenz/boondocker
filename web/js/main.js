@@ -2,7 +2,7 @@
 
 const TESTING = require('./testing')
 /* global localStorage */
-localStorage.debug = null //'map:marker:r*'
+localStorage.debug = null // 'map:marker:r*'
 
 const domready = require('domready')
 const MyMap = require('./map/google-map')
@@ -29,6 +29,7 @@ function attachRangeFn(x) {
   return x
 }
 
+/* eslint-disable comma-spacing */
 const priceMap = [
     { category: 'free'          , range: [ -1, 0 ] }
   , { category: 'supercheap'    , range: [ 0, 5 ] }
@@ -38,6 +39,7 @@ const priceMap = [
   , { category: 'very_expensive', range: [ 20, 30 ] }
   , { category: 'prohibitive'   , range: [ 30, Infinity ] }
 ].map(attachRangeFn)
+/* eslint-enable comma-spacing */
 
 /*
  * Attach Category

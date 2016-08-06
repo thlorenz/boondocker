@@ -204,21 +204,15 @@ class GoogleMap extends EventEmitter {
 
   _onlatlng(latlng) {
     const maps = google.maps
-    const MapTypeId = maps.MapTypeId
-
     this._el = this._getElement()
 
     this._map = new maps.Map(this._el, {
-        center: latlng
-      , scrollwheel : true
-      , zoom        : this._zoom
-      , mapTypeControlOptions: {
-          mapTypeIds: [
-            MapTypeId.ROADMAP
-          , MapTypeId.SATELLITE
-          , MapTypeId.HYBRID
-          , MapTypeId.TERRAIN
-        ]
+        center                : latlng
+      , scrollwheel           : true
+      , zoom                  : this._zoom
+      , streetViewControl     : false
+      , mapTypeControlOptions : {
+          mapTypeIds          : [ ]
       }
     })
 
