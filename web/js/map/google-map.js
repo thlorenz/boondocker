@@ -7,6 +7,10 @@ const getCurrentLatLng = require('./location').getCurrentLatLng
 const util = require('../util')
 const scaleFactor = util.isPhone() ? 2 : 1
 
+const debug_marker_add = require('debug')('map:marker:add')
+const debug_marker_rm = require('debug')('map:marker:rm')
+const debug_marker_ref = require('debug')('map:marker:ref')
+
 const icons = {
     blm : 'up-arrow'
   , fs  : 'down-arrow'
@@ -34,6 +38,7 @@ class GoogleMarker extends EventEmitter {
     this.price    = price
     this.info     = info
     this._map     = map
+    this._currentScale = -1
     this._createMarker()
   }
 
@@ -45,8 +50,16 @@ class GoogleMarker extends EventEmitter {
   get directions()  { return this.info.summary.directions }
   get url()         { return this.info.url }
 
+  removeFromMap() {
+    this._marker.setMap(null)
+  }
+
   updateMarkerIcon() {
     const maps = google.maps
+    // if scale didn't change there is no reason to update anything
+    if (this._currentScale === this._map.scale) return false
+    this._currentScale = this._map.scale
+
     const icon = icons[this.type]
     const path =
         icon === 'up-arrow'   ? maps.SymbolPath.FORWARD_CLOSED_ARROW
@@ -63,7 +76,7 @@ class GoogleMarker extends EventEmitter {
       , strokeColor  : color[1]
       , strokeWeight : 1
     })
-    this._map.refreshMarker(this._marker)
+    return true
   }
 
   _createMarker() {
@@ -128,22 +141,54 @@ class GoogleMap extends EventEmitter {
     return { ne, sw }
   }
 
+  clearMarkersExcept({ idsHash }) {
+    Object.keys(this._markers)
+      .forEach(k => {
+        const marker = this._markers[k]
+        if (idsHash[marker.id]) return
+        // remove from map but keep the marker object around
+        // which makes it faster to add it later .. good until we use up too much memory
+        this.removeMarker(marker)
+      })
+  }
+
   updateMarker({ id, position, type, price, info }) {
     const existingMarker = this._markers[id]
     const marker = existingMarker ||
       new GoogleMarker({ id, position, type, price, info, map: this })
 
+    const updated = marker.updateMarkerIcon()
+
     if (!existingMarker) {
       marker.on('clicked', () => this.emit('marker-clicked', marker))
       this._markers[id] = marker
+    } else if (updated) {
+      this.refreshMarker(marker)
     }
 
-    marker.updateMarkerIcon()
+    // doesn't do anything if marker is already visible
+    this.addMarker(marker)
+  }
+
+  addMarker(marker) {
+    if (marker.visible) return
+    marker._marker.setMap(this._map)
+    marker.visible = true
+    debug_marker_add(marker.id)
+  }
+
+  removeMarker(marker) {
+    if (!marker.visible) return
+    marker._marker.setMap(null)
+    marker.visible = false
+    debug_marker_rm(marker.id)
   }
 
   refreshMarker(marker) {
-    marker.setMap(null)
-    marker.setMap(this._map)
+    marker._marker.setMap(null)
+    marker._marker.setMap(this._map)
+    marker.visible = true
+    debug_marker_ref(marker.id)
   }
 
   get scale() {

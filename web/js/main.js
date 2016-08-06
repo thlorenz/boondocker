@@ -1,6 +1,9 @@
 'use strict'
 
 const TESTING = require('./testing')
+/* global localStorage */
+localStorage.debug = null //'map:marker:r*'
+
 const domready = require('domready')
 const MyMap = require('./map/google-map')
 const entitiesWithinBounds = require('./map/bounds').entitiesWithinBounds
@@ -115,6 +118,15 @@ function updateMarkers(bounds, map) {
 
   // TODO: proper message in UI
   if (inbounds.length > 1000) return console.error('Too many markers', inbounds.length)
+
+  function onmarker(acc, x) {
+    acc[x.uid] = true
+    return acc
+  }
+
+  map.clearMarkersExcept({
+    idsHash: inbounds.reduce(onmarker, {})
+  })
 
   inbounds
     .forEach(x => map.updateMarker({
