@@ -1,0 +1,36 @@
+#!/usr/bin/env node
+'use strict'
+
+const exec = require('child_process').execSync
+
+const path = require('path')
+const fs = require('fs')
+const util = require('util')
+
+const traverse = require('traverse')
+
+// Make these paths configurable via argv if we need to do this for more files
+const injson = path.resolve(__dirname, '../scrape/fs.usda/results/data.processed.json')
+const outjs = path.resolve(__dirname, '../web/data/boondocker.fs-usda-ridb/boondocker.fs-usda-ridb.js')
+
+const obj = require(injson)
+
+traverse(obj).forEach(onnode)
+
+function onnode(x) {
+  // remove all empty strings
+  // keep `null` values around as sometimes they signify something, i.e. fee: null means it is unknown
+  if (typeof x === 'string' && !x.trim().length) {
+    this.remove()
+  } else if (Array.isArray(x) && !x.length) {
+    this.remove()
+  }
+}
+
+const jsString = util.inspect(obj, { depth: null, maxArrayLength: null })
+const jsFile = `module.exports = ${jsString}`
+
+fs.writeFileSync(outjs, jsFile, 'utf8')
+
+console.log('Total Campsites:', require(outjs).length)
+console.log('Size:', exec(`du -h ${outjs}`).toString())

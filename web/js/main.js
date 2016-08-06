@@ -4,7 +4,7 @@ const TESTING = require('./testing')
 const domready = require('domready')
 const MyMap = require('./map/google-map')
 const entitiesWithinBounds = require('./map/bounds').entitiesWithinBounds
-const campsites = require('../../scrape/fs.usda/results/data.processed.json')
+const campsites = require('boondocker.fs-usda-ridb')
 
 /*
  * Diagnostices
