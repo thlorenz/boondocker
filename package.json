@@ -60,6 +60,7 @@
     "cheerio-tableparser": "~1.0.1",
     "linklocal": "~2.6.0",
     "livereactload": "~2.2.4",
+    "local-web-server": "~1.2.6",
     "react-tools": "~0.10.0",
     "react-transform": "0.0.3",
     "tape": "~4.6.0",
