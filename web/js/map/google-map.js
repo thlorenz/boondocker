@@ -4,6 +4,8 @@
 
 const EventEmitter = require('events').EventEmitter
 const getCurrentLatLng = require('./location').getCurrentLatLng
+const util = require('../util')
+const scaleFactor = util.isPhone() ? 2 : 1
 
 const icons = {
     blm : 'up-arrow'
@@ -13,11 +15,14 @@ const icons = {
 }
 
 const prices = {
-    free        : 'lightblue'
-  , supercheap  : 'green'
-  , cheap       : 'darkblue'
-  , expensive   : 'red'
-  , prohibitive : 'black'
+    free           : [ 'yellow', 'black' ]
+  , supercheap     : [ 'orange', 'black' ]
+  , cheap          : [ 'red', 'black' ]
+  , normal         : [ 'blue', 'black' ]
+  , expensive      : [ 'darkblue', 'transparent' ]
+  , very_expensive : [ '#000033', 'transparent' ]
+  , prohibitive    : [ 'darkgreen', 'transparent' ]
+  , unknown        : [ 'white', 'transparent' ]
 }
 
 class GoogleMarker extends EventEmitter {
@@ -32,12 +37,13 @@ class GoogleMarker extends EventEmitter {
     this._createMarker()
   }
 
-  get name()        { return this.info.name }
+  get title()       { return this.info.title }
   get lat()         { return this.position.lat }
   get lng()         { return this.position.lng }
-  get description() { return this.info.description }
-  get directions()  { return this.info.directions }
-  get link()        { return this.info.link }
+  get contact()     { return this.info.contact }
+  get description() { return this.info.summary.description }
+  get directions()  { return this.info.summary.directions }
+  get url()         { return this.info.url }
 
   updateMarkerIcon() {
     const maps = google.maps
@@ -47,14 +53,14 @@ class GoogleMarker extends EventEmitter {
       : icon === 'down-arrow' ? maps.SymbolPath.BACKWARD_CLOSED_ARROW
       : maps.SymbolPath.CIRCLE
 
-    const color = prices[this.price] || 'lightblue'
+    const color = prices[this.price] || [ 'transparent', 'transparent' ]
 
     this._marker.setIcon({
         path
       , scale        : this._map.scale
-      , fillColor    : color
-      , fillOpacity  : 0.6
-      , strokeColor  : color
+      , fillColor    : color[0]
+      , fillOpacity  : 0.7
+      , strokeColor  : color[1]
       , strokeWeight : 1
     })
     this._map.refreshMarker(this._marker)
@@ -73,26 +79,26 @@ class GoogleMarker extends EventEmitter {
 
 const scaling = [
     0
-  , 1   // 1
-  , 1   // 2
-  , 1   // 3
-  , 1   // 4
-  , 1   // 5
-  , 1   // 6
-  , 2   // 7
-  , 3.5 // 8
-  , 4   // 9
-  , 5   // 10
-  , 6   // 11
-  , 7   // 12
-  , 8   // 13
-  , 9   // 14
-  , 10  // 15
-  , 11  // 16
-  , 12  // 17
-  , 13  // 18
-  , 14  // 19
-  , 15  // 20
+  , 5   // 1
+  , 5   // 2
+  , 5   // 3
+  , 5   // 4
+  , 5   // 5
+  , 5   // 6
+  , 5   // 7
+  , 6.5 // 8
+  , 7   // 9
+  , 8   // 10
+  , 9   // 11
+  , 10  // 12
+  , 11  // 13
+  , 12  // 14
+  , 13  // 15
+  , 14  // 16
+  , 15  // 17
+  , 16  // 18
+  , 17  // 19
+  , 18  // 20
 ]
 
 /**
@@ -141,7 +147,7 @@ class GoogleMap extends EventEmitter {
   }
 
   get scale() {
-    return scaling[this._map.getZoom()]
+    return scaling[this._map.getZoom()] * scaleFactor
   }
 
   _onmapIdle() {

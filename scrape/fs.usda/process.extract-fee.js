@@ -20,7 +20,7 @@ const nofee = [
 ]
 
 // from most specific to least
-const fee = [
+const feeTemplates = [
     '^$EOF'
   , '^$/vehicle/day'
   , '^$ camping fee'
@@ -108,18 +108,35 @@ const fee = [
   , '$.+per night'
   // at this point take the first mention of an amount we can find
   , '__D__$'
-].map(toRegex)
+]
 
-function toRegex(s) {
-  const r = s
-    .replace(/ /g, '\\s*')
-    .replace(/-/g, '[\s-]')
-    .replace(/[$]/g, '[$]? ?([0-9]+(?:\\.[0-9]{1,2})?)[$]?')
-    .replace(/EOF/, '$')
-    .replace(/__D__/, '[$]')
+const strict$ = '[$]([0-9]+(?:\\.[0-9]{1,2})?)'
+const nonstrict$ = '[$]? ?([0-9]+(?:\\.[0-9]{1,2})?)[$]?'
 
-  const regex = new RegExp(r, 'i')
-  return regex
+const fee = feeTemplates
+  .map(toRegex(strict$))
+  .concat(
+    feeTemplates
+      .map(toRegex(nonstrict$))
+  )
+
+function inspect (obj, depth) {
+  console.error(require('util').inspect(obj, false, depth || 5, true))
+}
+
+inspect(fee)
+function toRegex(money) {
+  return function(s) {
+    const r = s
+      .replace(/ /g, '\\s*')
+      .replace(/-/g, '[\s-]')
+      .replace(/[$]/g, money)
+      .replace(/EOF/, '$')
+      .replace(/__D__/, '[$]')
+
+    const regex = new RegExp(r, 'i')
+    return regex
+  }
 }
 
 module.exports = function extractFee(s) {

@@ -52,6 +52,16 @@ getCampingFacilities(facilities)
 const withLocation = processed.filter(hasLocation)
 
 fs.writeFileSync(campgroundsProcessedDataPath, JSON.stringify(withLocation, null, 2), 'utf8')
+const free = withLocation.filter(x => x.fee === 0).length
+const five = withLocation.filter(x => x.fee <= 5).length
+const ten = withLocation.filter(x => x.fee > 5 && x.fee <= 10).length
+const fifteen = withLocation.filter(x => x.fee > 10 && x.fee <= 15).length
+const twenty = withLocation.filter(x => x.fee > 15 && x.fee <= 20).length
+const thirty = withLocation.filter(x => x.fee > 20 && x.fee <= 30).length
+const above = withLocation.filter(x => x.fee > 30).length
+const unknown = withLocation.filter(x => x.fee === null).length
+
+console.log({ free, five,  ten, fifteen, twenty, thirty, above, unknown, total: withLocation.length })
 
 function getText(val) {
   if (!val) return ''

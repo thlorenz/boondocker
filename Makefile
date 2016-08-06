@@ -7,8 +7,8 @@ ROOT=./web
 DEPS=$(ROOT)/deps
 
 
-REQUIRE_VENDORS=-r react -r react-dom -r redux
-EXCLUDE_MODULES=-x react -x react-dom -x redux
+REQUIRE_VENDORS=-r react -r react-dom -r redux -r ./scrape/fs.usda/results/data.processed
+EXCLUDE_MODULES=-x react -x react-dom -x redux -x ./scrape/fs.usda/results/data.processed
 NOPARSE_MODULES=
 
 ENTRY=web/js/main.js

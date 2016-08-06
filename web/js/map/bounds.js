@@ -7,8 +7,8 @@ exports.entitiesWithinBounds = function entitiesWithinBounds({ ne, sw }, entitie
   const maxlng = ne.lng()
 
   function withinBounds(e) {
-    const lat = e.latitude
-    const lng = e.longitude
+    const lat = e.location.lat
+    const lng = e.location.lng
     return minlat < lat && lat < maxlat
         && minlng < lng && lng < maxlng
   }
