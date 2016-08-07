@@ -4,8 +4,6 @@
 
 const EventEmitter = require('events').EventEmitter
 const getCurrentLatLng = require('./location').getCurrentLatLng
-const util = require('../util')
-const scaleFactor = util.isPhone() ? 2 : 1
 
 const debug_marker_add = require('debug')('map:marker:add')
 const debug_marker_rm = require('debug')('map:marker:rm')
@@ -227,7 +225,7 @@ class GoogleMap extends EventEmitter {
   }
 
   get scale() {
-    return scaling[this._map.getZoom()] * scaleFactor
+    return scaling[this._map.getZoom()]
   }
 
   _onmapIdle() {
