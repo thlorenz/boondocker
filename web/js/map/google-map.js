@@ -9,13 +9,6 @@ const debug_marker_add = require('debug')('map:marker:add')
 const debug_marker_rm = require('debug')('map:marker:rm')
 const debug_marker_ref = require('debug')('map:marker:ref')
 
-const icons = {
-    blm : 'up-arrow'
-  , fs  : 'down-arrow'
-  , fws : 'circle'
-  , nps : 'circle'
-}
-
 const prices = {
     free           : [ 'yellow', 'black' ]
   , supercheap     : [ 'orange', 'black' ]
@@ -63,24 +56,20 @@ class GoogleMarker extends EventEmitter {
     this._marker.setMap(null)
   }
 
-  updateMarkerIcon({ highlight, force } = {}) {
+  updateMarkerIcon({ selected = false, force = false } = {}) {
     const maps = google.maps
     // if scale didn't change there is no reason to update anything
     if (this._currentScale === this._map.scale && !force) return false
     this._currentScale = this._map.scale
 
-    const icon = icons[this.type]
-    const path =
-        icon === 'up-arrow'   ? maps.SymbolPath.FORWARD_CLOSED_ARROW
-      : icon === 'down-arrow' ? maps.SymbolPath.BACKWARD_CLOSED_ARROW
-      : maps.SymbolPath.CIRCLE
+    const path = maps.SymbolPath.CIRCLE
 
     const color = prices[this.price] || [ 'transparent', 'transparent' ]
 
     this._marker.setIcon({
         path
-      , scale        : highlight ? this._map.scale * 1.6 : this._map.scale
-      , fillColor    : color[0]
+      , scale        : this._map.scale
+      , fillColor    : selected ? 'aqua' : color[0]
       , fillOpacity  : 0.7
       , strokeColor  : color[1]
       , strokeWeight : 1
@@ -93,11 +82,11 @@ class GoogleMarker extends EventEmitter {
   }
 
   unselect() {
-    this.updateMarkerIcon({ highlight: false, force: true })
+    this.updateMarkerIcon({ selected: false, force: true })
   }
 
   select() {
-    this.updateMarkerIcon({ highlight: true, force: true })
+    this.updateMarkerIcon({ selected: true, force: true })
   }
 
   _infoWindowContent() {
