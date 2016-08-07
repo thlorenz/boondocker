@@ -78,7 +78,14 @@ function getDetails(info) {
   return details
 }
 
+let markerShowingInfo
 function onmarkerClicked(x) {
+  if (markerShowingInfo) markerShowingInfo.hideInfo()
+  x.showInfo()
+  markerShowingInfo = x
+}
+
+function onmarkerInfoClicked(x) {
   const googleSearch = x.title
     ? `<li><a href="https://www.google.com/search?q=${x.title.replace(/ /g, '+')}">Search Google</a></li>`
     : ''
@@ -151,5 +158,6 @@ function initMap() {
   map.on('idle', updateMap)
   map.on('zoom-changed', updateMap)
   map.on('marker-clicked', onmarkerClicked)
+  map.on('marker-info-clicked', onmarkerInfoClicked)
 }
 window.initMap = initMap

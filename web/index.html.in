@@ -6,7 +6,7 @@
   <link rel="stylesheet" href="css/index.css" type="text/css" media="screen" title="main css" charset="utf-8">
   <script src="build/data.js" type="application/javascript"></script>
   <script src="build/bundle.js" type="application/javascript"></script>
-  <script async defer src="https://maps.googleapis.com/maps/api/js?key={{GOOGLE_API}}&callback=initMap"></script>
+  <script async defer src="https://maps.googleapis.com/maps/api/js?key={{GOOGLE_API}}&signed_in=true&callback=initMap"></script>
 
   <!-- needed for diagnosis in development -->
   <script src="deps/json-human/crel.js" type="application/javascript"></script>

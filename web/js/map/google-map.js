@@ -29,6 +29,19 @@ const prices = {
   , unknown        : [ 'white', 'transparent' ]
 }
 
+function saveWidget({ el, placeID, location, query }) {
+  return new google.maps.SaveWidget(el, {
+    place: {
+        query: query
+      , location: location
+    },
+    attribution: {
+        source: 'boondocker'
+      , webUrl: 'https://thlorenz.com/boondocker/web/'
+    }
+  })
+}
+
 class GoogleMarker extends EventEmitter {
   constructor({ id, position, type, price, info, map }) {
     super()
@@ -49,6 +62,7 @@ class GoogleMarker extends EventEmitter {
   get description() { return this.info.summary.description }
   get directions()  { return this.info.summary.directions }
   get url()         { return this.info.url }
+  get fee()         { return this.info.fee }
 
   removeFromMap() {
     this._marker.setMap(null)
@@ -79,14 +93,44 @@ class GoogleMarker extends EventEmitter {
     return true
   }
 
+  showInfo() {
+    this._infoWindow.open(this._map, this._marker)
+  }
+
+  hideInfo() {
+    this._infoWindow.close(this._map)
+  }
+
+  _infoWindowContent() {
+    return `
+    <div class="info-window-content">
+      <span class="fee">$${this.fee}</span>
+      <h4 class="title">${this.title}</h4>
+    </div>
+    `
+  }
+
   _createMarker() {
+    const self = this
     const maps = google.maps
     this._marker = new maps.Marker({
-        position: new maps.LatLng(this.position.lat, this.position.lng)
+        place: {
+            location : new maps.LatLng(this.position.lat, this.position.lng)
+          , query    : this.title
+        }
       , draggable : false
       , zIndex    : 1
     })
+    this._infoWindow = new google.maps.InfoWindow({
+        content: this._infoWindowContent(this)
+      , maxWidth: 300
+
+    })
     maps.event.addListener(this._marker, 'click', () => this.emit('clicked'))
+    maps.event.addListener(this._infoWindow, 'domready', function oninfoWindoReady() {
+      const body = document.getElementsByClassName('info-window-content').item(0)
+      body.addEventListener('click', () => self.emit('info-clicked'))
+    })
   }
 }
 
@@ -161,6 +205,7 @@ class GoogleMap extends EventEmitter {
 
     if (!existingMarker) {
       marker.on('clicked', () => this.emit('marker-clicked', marker))
+      marker.on('info-clicked', () => this.emit('marker-info-clicked', marker))
       this._markers[id] = marker
     } else if (updated) {
       this.refreshMarker(marker)

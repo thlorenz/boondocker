@@ -15,3 +15,12 @@
   bottom   : 0;
   left     : 70%;
 }
+
+.info-window-content {
+  cursor: pointer;
+}
+
+.info-window-content .title {
+  display: inline;
+  margin-left: 5px;
+}
