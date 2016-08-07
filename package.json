@@ -44,6 +44,7 @@
   "dependencies": {
     "boondocker.fs-usda-ridb": "file:web/data/boondocker.fs-usda-ridb",
     "debug": "~2.2.0",
+    "decamelize": "~1.2.0",
     "domready": "~1.0.8",
     "js": "~0.1.0",
     "react": "~15.1.0",

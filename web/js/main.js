@@ -2,6 +2,7 @@
 
 const TESTING = require('./testing')
 const util = require('./util')
+const details = require('./details')
 
 /* global localStorage */
 localStorage.debug = null // 'map:marker:r*'
@@ -130,14 +131,17 @@ function onmarkerInfoClicked() {
     : ''
   content.innerHTML = `
     <div class="detail">
+      ${details(x.info)}
+      <!-- hidden for now
       ${description}
       ${directions}
+      -->
     </div>
   `
   content.classList.remove('hidden')
   content.classList.add('visible')
 
-  if (!TESTING) return
+  if (!TESTING || true) return
   content.innerHTML += '<h4>Details</h4>'
   content.appendChild(window.JsonHuman.format(getDetails(x.info)))
 }
