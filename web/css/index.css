@@ -1,6 +1,6 @@
 .map {
   position : absolute;
-  right    : 35%;
+  right    : 0;
   bottom   : 0;
   left     : 0;
   top      : 0;
@@ -9,7 +9,8 @@
   position : absolute;
   right    : 0;
   bottom   : 0;
-  left     : 70%;
+  left     : 0;
+  display  : none;
 }
 .quickinfo {
   position : absolute;
@@ -27,5 +28,35 @@
 .quickinfo .title {
   display: inline;
   margin-left: 5px;
-  font-size: 16px;
+  font-size: 17px;
+}
+
+.quickinfo .open,
+.quickinfo .directions,
+.quickinfo .call,
+.quickinfo .web {
+  text-decoration: none;
+  position: absolute;
+  top: 12px;
+}
+
+.quickinfo .open {
+  right: 140px;
+}
+.quickinfo .directions {
+  right: 110px;
+}
+.quickinfo .call {
+  right: 80px;
+}
+.quickinfo .web {
+  right: 50px;
+}
+
+.quickinfo .open img,
+.quickinfo .directions img,
+.quickinfo .call img,
+.quickinfo .web img {
+  width: 27px;
+  height: 27px;
 }

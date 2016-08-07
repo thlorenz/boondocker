@@ -85,10 +85,22 @@ function onmarkerClicked(x) {
 }
 
 function updateQuickInfo(x) {
+  const call = x.contact
+    ? `<a class="call" href="callto:${x.contact}"><img src="img/call.png" alt="Call"></a>`
+    : ''
+
+  const web = x.url
+    ? `<a class="web" href="${x.url}"><img src="img/website.png" alt="Goto Website"></a>`
+    : ''
+
   quickinfo.innerHTML = `
     <div class="quickinfo-content">
       <span class="fee">$${x.fee}</span>
       <h4 class="title">${x.title}</h4>
+      <a class="open" href="https://maps.google.com/maps?z=12&q=${x.lat}+${x.lng}&ll=${x.lat}+${x.lng}"><img src="img/gm.open.png" alt="Open in Google Maps"></a>
+      <a class="directions" href="https://maps.google.com/?saddr=My%20Location&daddr=${x.lat},+${x.lng}"><img src="img/gm.directions.png" alt="Directions in Google Maps"></a>
+      ${web}
+      ${call}
     </div>`
   x.addInfo(quickinfo)
 }
