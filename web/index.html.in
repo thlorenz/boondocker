@@ -7,6 +7,11 @@
   <meta name="mobile-web-app-capable" content="yes">
 
   <title>boondocker</title>
+
+  <!-- ensure we get the correct favicon even is we run as a subdomain -->
+  <link rel="shortcut icon" href="favicon.ico" type="image/x-icon" />
+
+
   <!-- add to homescreen reminder: https://github.com/cubiq/add-to-homescreen -->
   <script src="deps/addtohomescreen/addtohomescreen.min.js" type="application/javascript"></script>
   <link rel="stylesheet" href="deps/addtohomescreen/addtohomescreen.css" type="text/css" media="screen" charset="utf-8">
