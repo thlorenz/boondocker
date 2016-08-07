@@ -16,6 +16,7 @@ const info = {
     platform: navigator.platform
   , userAgent: navigator.userAgent
 }
+console.log(info)
 
 /*
  * Price Map
@@ -62,13 +63,14 @@ function attachFeeCategory(x) {
 
 let content
 let quickinfo
+let currentMarker
 
 domready(ondomready)
 
 function ondomready() {
   content = document.getElementById('content')
-  content.innerHTML = info.platform + ' | ' + info.userAgent
   quickinfo = document.getElementById('quickinfo')
+  quickinfo.addEventListener('click', onmarkerInfoClicked)
 }
 
 function getDetails(info) {
@@ -81,12 +83,15 @@ function getDetails(info) {
 }
 
 function onmarkerClicked(x) {
+  if (currentMarker) currentMarker.unselect()
+  x.select()
+  currentMarker = x
   updateQuickInfo(x)
 }
 
 function updateQuickInfo(x) {
   const call = x.contact
-    ? `<a class="call" href="callto:${x.contact}"><img src="img/call.png" alt="Call"></a>`
+    ? `<a class="call" href="tel:${x.contact}"><img src="img/call.png" alt="Call"></a>`
     : ''
 
   const web = x.url
@@ -102,36 +107,31 @@ function updateQuickInfo(x) {
       ${web}
       ${call}
     </div>`
+  // TODO: supress all clicks from <a>s
   x.addInfo(quickinfo)
 }
 
-function onmarkerInfoClicked(x) {
-  const googleSearch = x.title
-    ? `<li><a href="https://www.google.com/search?q=${x.title.replace(/ /g, '+')}">Search Google</a></li>`
+function onmarkerInfoClicked() {
+  // toggle off if currently shown
+  if (!content.classList.contains('hidden')) {
+    content.classList.remove('visible')
+    return content.classList.add('hidden')
+  }
+  const x = currentMarker
+  const description = x.description
+    ? `<h4>Description</h4><p>${x.description}<p>`
     : ''
-  const call = x.contact
-    ? `<li><a href="callto:${x.contact}">${x.contact}</a></li>`
+  const directions = x.directions
+    ? `<h4>Directions</h4><p>${x.directions}<p>`
     : ''
-
   content.innerHTML = `
     <div class="detail">
-      <h3>${x.title}</h3>
-
-      <p>${x.description}<p>
-
-      <h4>Directions</h4>
-      <p>${x.directions}</p>
-
-      <h4>Links</h4>
-      <ul class="detail-links">
-        <li><a href="https://maps.google.com/maps?z=12&q=${x.lat}+${x.lng}&ll=${x.lat}+${x.lng}">View in Google Maps</a></li>
-        <li><a href="https://maps.google.com/?saddr=My%20Location&daddr=${x.lat},+${x.lng}">Driving Directions</a></li>
-        ${googleSearch}
-        ${call}
-        <li><a href="${x.url}">${x.title}</a></li>
-      </ul>
+      ${description}
+      ${directions}
     </div>
   `
+  content.classList.remove('hidden')
+  content.classList.add('visible')
 
   if (!TESTING) return
   content.innerHTML += '<h4>Details</h4>'

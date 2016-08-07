@@ -65,10 +65,10 @@ class GoogleMarker extends EventEmitter {
     this._marker.setMap(null)
   }
 
-  updateMarkerIcon() {
+  updateMarkerIcon({ highlight, force } = {}) {
     const maps = google.maps
     // if scale didn't change there is no reason to update anything
-    if (this._currentScale === this._map.scale) return false
+    if (this._currentScale === this._map.scale && !force) return false
     this._currentScale = this._map.scale
 
     const icon = icons[this.type]
@@ -81,7 +81,7 @@ class GoogleMarker extends EventEmitter {
 
     this._marker.setIcon({
         path
-      , scale        : this._map.scale
+      , scale        : highlight ? this._map.scale * 1.6 : this._map.scale
       , fillColor    : color[0]
       , fillOpacity  : 0.7
       , strokeColor  : color[1]
@@ -94,8 +94,12 @@ class GoogleMarker extends EventEmitter {
     this._saveWidget = saveWidget({ el, place: this._place })
   }
 
-  hideInfo() {
-    // this._infoWindow.close(this._map)
+  unselect() {
+    this.updateMarkerIcon({ highlight: false, force: true })
+  }
+
+  select() {
+    this.updateMarkerIcon({ highlight: true, force: true })
   }
 
   _infoWindowContent() {
@@ -119,10 +123,6 @@ class GoogleMarker extends EventEmitter {
       , zIndex    : 1
     })
     maps.event.addListener(this._marker, 'click', () => this.emit('clicked'))
-    /* maps.event.addListener(this._infoWindow, 'domready', function oninfoWindoReady() {
-      const body = document.getElementsByClassName('info-window-content').item(0)
-      body.addEventListener('click', () => self.emit('info-clicked'))
-    })*/
   }
 }
 
@@ -194,16 +194,13 @@ class GoogleMap extends EventEmitter {
     const marker = existingMarker ||
       new GoogleMarker({ id, position, type, price, info, map: this })
 
-    const updated = marker.updateMarkerIcon()
+    marker.updateMarkerIcon()
 
     if (!existingMarker) {
       marker.on('clicked', () => this.emit('marker-clicked', marker))
       marker.on('info-clicked', () => this.emit('marker-info-clicked', marker))
       this._markers[id] = marker
-    } else if (updated) {
-      this.refreshMarker(marker)
     }
-
     // doesn't do anything if marker is already visible
     this.addMarker(marker)
   }
