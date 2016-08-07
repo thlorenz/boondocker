@@ -27,7 +27,7 @@ exports.addToHomeScreen = function addToHomeScreen() {
     onAdd               : null,                       // when the application is launched the first time from the homescreen (guesstimate)
     onPrivate           : null,                       // executed if user is in private mode
     privateModeOverride : false,                      // show the message even in private mode (very rude)
-    detectHomescreen    : false                       // try to detect if the site has been added to the homescreen (false | true | 'hash' | 'queryString' | 'smartURL')
+    detectHomescreen    : true                        // try to detect if the site has been added to the homescreen (false | true | 'hash' | 'queryString' | 'smartURL')
   }
   window.addToHomescreen(opts)
 }
