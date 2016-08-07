@@ -2,7 +2,14 @@
 <html>
 <head>
   <meta charset=utf-8 />
-  <title>Boondocker</title>
+
+  <meta name="mobile-web-app-capable" content="yes">
+
+  <title>boondocker</title>
+  <!-- add to homescreen reminder: https://github.com/cubiq/add-to-homescreen -->
+  <script src="deps/addtohomescreen/addtohomescreen.min.js" type="application/javascript"></script>
+  <link rel="stylesheet" href="deps/addtohomescreen/addtohomescreen.css" type="text/css" media="screen" charset="utf-8">
+
   <link rel="stylesheet" href="css/index.css" type="text/css" media="screen" title="main css" charset="utf-8">
   <script src="build/data.js" type="application/javascript"></script>
   <script src="build/bundle.js" type="application/javascript"></script>

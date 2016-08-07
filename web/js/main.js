@@ -1,6 +1,8 @@
 'use strict'
 
 const TESTING = require('./testing')
+const util = require('./util')
+
 /* global localStorage */
 localStorage.debug = null // 'map:marker:r*'
 
@@ -17,6 +19,8 @@ const info = {
   , userAgent: navigator.userAgent
 }
 console.log(info)
+
+util.addToHomeScreen()
 
 /*
  * Price Map
