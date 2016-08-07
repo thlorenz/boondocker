@@ -61,12 +61,14 @@ function attachFeeCategory(x) {
 }
 
 let content
+let quickinfo
 
 domready(ondomready)
 
 function ondomready() {
   content = document.getElementById('content')
   content.innerHTML = info.platform + ' | ' + info.userAgent
+  quickinfo = document.getElementById('quickinfo')
 }
 
 function getDetails(info) {
@@ -78,11 +80,17 @@ function getDetails(info) {
   return details
 }
 
-let markerShowingInfo
 function onmarkerClicked(x) {
-  if (markerShowingInfo) markerShowingInfo.hideInfo()
-  x.showInfo()
-  markerShowingInfo = x
+  updateQuickInfo(x)
+}
+
+function updateQuickInfo(x) {
+  quickinfo.innerHTML = `
+    <div class="quickinfo-content">
+      <span class="fee">$${x.fee}</span>
+      <h4 class="title">${x.title}</h4>
+    </div>`
+  x.addInfo(quickinfo)
 }
 
 function onmarkerInfoClicked(x) {
@@ -153,7 +161,10 @@ function updateMap() {
 }
 
 function initMap() {
-  const map = new MyMap({ getElement: () => document.getElementById('map') })
+  const map = new MyMap({
+      getElement: () => document.getElementById('map')
+    , getQuickinfo: () => document.getElementById('quickinfo')
+  })
   map.init()
   map.on('idle', updateMap)
   map.on('zoom-changed', updateMap)

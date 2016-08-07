@@ -29,16 +29,13 @@ const prices = {
   , unknown        : [ 'white', 'transparent' ]
 }
 
-function saveWidget({ el, placeID, location, query }) {
+function saveWidget({ el, place }) {
   return new google.maps.SaveWidget(el, {
-    place: {
-        query: query
-      , location: location
-    },
-    attribution: {
-        source: 'boondocker'
-      , webUrl: 'https://thlorenz.com/boondocker/web/'
-    }
+      place
+    , attribution: {
+          source: 'boondocker'
+        , webUrl: 'https://thlorenz.com/boondocker/web/'
+      }
   })
 }
 
@@ -93,12 +90,12 @@ class GoogleMarker extends EventEmitter {
     return true
   }
 
-  showInfo() {
-    this._infoWindow.open(this._map, this._marker)
+  addInfo(el) {
+    this._saveWidget = saveWidget({ el, place: this._place })
   }
 
   hideInfo() {
-    this._infoWindow.close(this._map)
+    // this._infoWindow.close(this._map)
   }
 
   _infoWindowContent() {
@@ -111,26 +108,21 @@ class GoogleMarker extends EventEmitter {
   }
 
   _createMarker() {
-    const self = this
     const maps = google.maps
+    this._place = {
+        location : new maps.LatLng(this.position.lat, this.position.lng)
+      , query    : this.title
+    }
     this._marker = new maps.Marker({
-        place: {
-            location : new maps.LatLng(this.position.lat, this.position.lng)
-          , query    : this.title
-        }
+        place: this._place
       , draggable : false
       , zIndex    : 1
     })
-    this._infoWindow = new google.maps.InfoWindow({
-        content: this._infoWindowContent(this)
-      , maxWidth: 300
-
-    })
     maps.event.addListener(this._marker, 'click', () => this.emit('clicked'))
-    maps.event.addListener(this._infoWindow, 'domready', function oninfoWindoReady() {
+    /* maps.event.addListener(this._infoWindow, 'domready', function oninfoWindoReady() {
       const body = document.getElementsByClassName('info-window-content').item(0)
       body.addEventListener('click', () => self.emit('info-clicked'))
-    })
+    })*/
   }
 }
 
@@ -165,9 +157,10 @@ const scaling = [
  * and/or mocks for quicker testing.
  */
 class GoogleMap extends EventEmitter {
-  constructor({ getElement, zoom = 8 }) {
+  constructor({ getElement, getQuickinfo, zoom = 8 }) {
     super()
     this._getElement = getElement
+    this._getQuickinfo = getQuickinfo
     this._zoom = zoom
     this._markers = new Map()
   }
@@ -250,6 +243,7 @@ class GoogleMap extends EventEmitter {
   _onlatlng(latlng) {
     const maps = google.maps
     this._el = this._getElement()
+    this._quickinfo = this._getQuickinfo()
 
     this._map = new maps.Map(this._el, {
         center                : latlng
@@ -260,6 +254,8 @@ class GoogleMap extends EventEmitter {
           mapTypeIds          : [ ]
       }
     })
+
+    this._map.controls[maps.ControlPosition.TOP].push(this._quickinfo)
 
     this._map.addListener('idle', () => this._onmapIdle())
     this._map.addListener('zoom-changed', () => this._onzoomChanged())

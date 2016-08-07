@@ -1,26 +1,31 @@
-.appname {
-  margin-top: -8px;
-}
 .map {
   position : absolute;
-  top      : 20px;
   right    : 35%;
   bottom   : 0;
   left     : 0;
+  top      : 0;
 }
 .content {
   position : absolute;
-  top      : 20px;
   right    : 0;
   bottom   : 0;
   left     : 70%;
 }
+.quickinfo {
+  position : absolute;
+  right    : 0;
+  left     : 0;
+  padding-left: 5px;
+  background: white;
+  border-bottom: 1px solid black;
+}
 
-.info-window-content {
+.quickinfo-content {
   cursor: pointer;
 }
 
-.info-window-content .title {
+.quickinfo .title {
   display: inline;
   margin-left: 5px;
+  font-size: 16px;
 }

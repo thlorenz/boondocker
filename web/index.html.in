@@ -14,8 +14,8 @@
   <link rel="stylesheet" href="deps/json-human/json.human.css" type="text/css" media="screen" charset="utf-8">
 </head>
 <body>
-  <h3 class="appname">boondocker</h3>
   <div id="map" class="map"></div>
   <div id="content" class="content"></div>
+  <div id="quickinfo" class="quickinfo"></div>
 </body>
 </html>
