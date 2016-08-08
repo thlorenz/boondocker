@@ -2,6 +2,13 @@
   opacity: 0.1;
 }
 
+.unselectable,
+.unselectable * {
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  user-select: none;
+}
+
 .map {
   position: absolute;
   left     : 0;
@@ -119,4 +126,29 @@
   border: 1px solid black;
   line-height: 24px;
   background: white;
+}
+
+.detail .links {
+  float: right;
+  margin-right: 10px;
+}
+.detail .links a {
+  text-decoration: none;
+}
+
+.open-googlemaps {
+  width: 100px;
+  /* Just BOTTOM_RIGHT is not positioning things exactlye where we want them */
+  right: 30px !important;
+  bottom: 18px !important;
+}
+
+.open-googlemaps img {
+  height: 45px;
+  width: 45px;
+}
+.open-googlemaps .directions img {
+  height: 38px;
+  width: 38px;
+  margin-bottom: 5px;
 }

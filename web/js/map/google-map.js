@@ -144,10 +144,11 @@ const scaling = [
  * and/or mocks for quicker testing.
  */
 class GoogleMap extends EventEmitter {
-  constructor({ getElement, getQuickinfo, zoom = 8 }) {
+  constructor({ getElement, getQuickinfo, getOpenGoogleMaps, zoom = 8 }) {
     super()
     this._getElement = getElement
     this._getQuickinfo = getQuickinfo
+    this._getOpenGoogleMaps = getOpenGoogleMaps
     this._zoom = zoom
     this._markers = new Map()
   }
@@ -228,6 +229,7 @@ class GoogleMap extends EventEmitter {
     const maps = google.maps
     this._el = this._getElement()
     this._quickinfo = this._getQuickinfo()
+    this._openGoogleMaps = this._getOpenGoogleMaps()
 
     this._map = new maps.Map(this._el, {
         center                : latlng
@@ -240,6 +242,7 @@ class GoogleMap extends EventEmitter {
     })
 
     this._map.controls[maps.ControlPosition.TOP].push(this._quickinfo)
+    this._map.controls[maps.ControlPosition.BOTTOM_RIGHT].push(this._openGoogleMaps)
 
     this._map.addListener('idle', () => this._onmapIdle())
     this._map.addListener('zoom-changed', () => this._onzoomChanged())

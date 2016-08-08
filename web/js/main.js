@@ -68,6 +68,7 @@ function attachFeeCategory(x) {
 
 let content
 let quickinfo
+let openGoogleMaps
 let currentMarker
 
 domready(ondomready)
@@ -76,6 +77,7 @@ function ondomready() {
   content = document.getElementById('content')
   quickinfo = document.getElementById('quickinfo')
   quickinfo.addEventListener('click', onmarkerInfoClicked)
+  openGoogleMaps = document.getElementById('open-googlemaps')
 }
 
 function getDetails(info) {
@@ -92,28 +94,32 @@ function onmarkerClicked(x) {
   x.select()
   currentMarker = x
   updateQuickInfo(x)
+  updateOpenGoogleMaps(x)
 }
 
 function updateQuickInfo(x) {
-  const call = x.contact
-    ? `<a class="call" href="tel:${x.contact}"><img src="img/call.png" alt="Call"></a>`
-    : ''
-
-  const web = x.url
-    ? `<a class="web" href="${x.url}" target="_blank"><img src="img/website.png" alt="Goto Website"></a>`
-    : ''
-
   quickinfo.innerHTML = `
     <div class="quickinfo-content">
       <span class="fee">$${x.fee}</span>
       <h4 class="title">${x.title}</h4>
-      <a class="open" href="https://maps.google.com/maps?z=12&q=${x.lat}+${x.lng}&ll=${x.lat}+${x.lng}" target="_blank"><img src="img/gm.open.png" alt="Open in Google Maps"></a>
-      <a class="directions" href="https://maps.google.com/?saddr=My%20Location&daddr=${x.lat},+${x.lng}" target="_blank"><img src="img/gm.directions.png" alt="Directions in Google Maps"></a>
-      ${web}
-      ${call}
     </div>`
   // TODO: supress all clicks from <a>s
   x.addInfo(quickinfo)
+}
+
+function renderOpenGoogleMaps(x) {
+  return `
+    <a class="open unselectable" href="https://maps.google.com/maps?z=8&q=${x.lat}+${x.lng}&ll=${x.lat}+${x.lng}" target="_blank">
+      <img src="img/gm.open.png" alt="Open in Google Maps">
+    </a>
+    <a class="directions unselectable" href="https://maps.google.com/?saddr=My%20Location&daddr=${x.lat},+${x.lng}" target="_blank">
+      <img src="img/gm.directions.png" alt="Directions in Google Maps">
+    </a>
+  `
+}
+
+function updateOpenGoogleMaps(x) {
+  openGoogleMaps.innerHTML = renderOpenGoogleMaps(x)
 }
 
 function onmarkerInfoClicked() {
@@ -123,19 +129,22 @@ function onmarkerInfoClicked() {
     return content.classList.add('hidden')
   }
   const x = currentMarker
-  const description = x.description
-    ? `<h4>Description</h4><p>${x.description}<p>`
+
+  const call = x.contact
+    ? `<a class="call unselectable" href="tel:${x.contact}"><img src="img/call.png" alt="Call"></a>`
     : ''
-  const directions = x.directions
-    ? `<h4>Directions</h4><p>${x.directions}<p>`
+  const web = x.url
+    ? `<a class="web unselectable" href="${x.url}" target="_blank"><img src="img/website.png" alt="Goto Website"></a>`
     : ''
   content.innerHTML = `
     <div class="detail">
-      ${details(x.info)}
-      <!-- hidden for now
-      ${description}
-      ${directions}
-      -->
+      ${details.renderAmenities(x.info)}
+      <div class="links">
+        ${web}
+        ${call}
+        ${renderOpenGoogleMaps(x)}
+      </div>
+      ${details.renderSummary(x.info)}
     </div>
   `
   content.classList.remove('hidden')
@@ -184,6 +193,7 @@ function initMap() {
   const map = new MyMap({
       getElement: () => document.getElementById('map')
     , getQuickinfo: () => document.getElementById('quickinfo')
+    , getOpenGoogleMaps: () => document.getElementById('open-googlemaps')
   })
   map.init()
   map.on('idle', updateMap)

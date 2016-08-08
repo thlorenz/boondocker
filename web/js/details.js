@@ -10,7 +10,7 @@ function renderSummaryKey(k) {
   return s[0].toUpperCase() + s.slice(1)
 }
 
-function renderSummary(summary) {
+function _renderSummary(summary) {
   if (!summary) return ''
   const rows = Object.keys(summary).reduce(onkey, '')
   function onkey(acc, k) {
@@ -27,7 +27,7 @@ function renderSummary(summary) {
     `
 }
 
-function renderAmenities(xs, type) {
+function _renderAmenities(xs, type) {
   // we can assume that tents are allowed if it's a campsite ;)
   if (type === 'camping') xs = xs.concat('tent')
   function toAmenityCell(html, x) {
@@ -49,7 +49,7 @@ function renderAmenities(xs, type) {
     `
 }
 
-module.exports = function details(info) {
+exports.renderAmenities = function renderAmenities(info) {
   // TODO: do this during scraping step and make this a bit
   // less hacky and more deterministic ;)
   // fix the unknown spelling error during data analysis as well
@@ -58,8 +58,9 @@ module.exports = function details(info) {
     : info.type === 'unkown'
       ? 'camping'
       : info.type
-  return `
-    ${renderAmenities(info.amenities || [], type)}
-    ${renderSummary(info.summary || {})}
-  `
+  return _renderAmenities(info.amenities || [], type)
+}
+
+exports.renderSummary = function renderSummary(info) {
+  return _renderSummary(info.summary || {})
 }
