@@ -1,0 +1,22 @@
+#!/bin/sh
+
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+ROOT=$DIR/..
+WEB=$ROOT/web
+BUILD=$WEB/build
+DEPLOY=$ROOT/deploy
+DEPLOY_BUILD=$DEPLOY/build
+
+#rm -rf web/index.html web/build/bundle.js               && \
+#make -C $ROOT bundle-min                                && \
+make -C $ROOT index                                      && \
+[ -f $BUILD/data.js ] || make -C $ROOT data              && \
+mkdir -p $DEPLOY                                   && \
+rm -rf $DEPLOY/*                                         && \
+mkdir -p $DEPLOY_BUILD                                   && \
+cp -R $WEB/css $DEPLOY/css                               && \
+cp -R $WEB/img $DEPLOY/img                               && \
+cp -R $WEB/deps $DEPLOY/deps                             && \
+cp $WEB/{index.html,favicon.ico} $DEPLOY                 && \
+gzip -9 -c $BUILD/bundle.js > $DEPLOY_BUILD/bundle.js.gz && \
+gzip -9 -c $BUILD/data.js > $DEPLOY_BUILD/data.js.gz
