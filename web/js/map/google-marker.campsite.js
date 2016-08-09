@@ -66,7 +66,7 @@ class GoogleMarker extends EventEmitter {
       , scale        : this._map.scale
       , fillColor    : selected ? 'aqua' : color[0]
       , fillOpacity  : 0.7
-      , strokeColor  : color[1]
+      , strokeColor  : selected ? 'black' : color[1]
       , strokeWeight : 1
     })
     return true
