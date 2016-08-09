@@ -159,11 +159,26 @@ function matchingFilter() {
   return campsites.filter(x => x.feeCategory !== 'unknown')
 }
 
+let showingTooManyWarning = false
+let quickinfoBefore = ''
 function updateMarkers(bounds, map) {
   const inbounds = entitiesWithinBounds(bounds, matchingFilter())
 
-  // TODO: proper message in UI
-  if (inbounds.length > 1000) return console.error('Too many markers', inbounds.length)
+  if (inbounds.length > 400) {
+    if (!showingTooManyWarning) quickinfoBefore = quickinfo.innerHTML
+    quickinfo.innerHTML = `
+      <h2>Too many campsites (${inbounds.length}) within this area</h2>
+      <h3><em>Please zoom in further</em></h3>
+    `
+    showingTooManyWarning = true
+    map.clearMarkersExcept({ idsHash: {} })
+    return
+  }
+
+  if (showingTooManyWarning) {
+    quickinfo.innerHTML = quickinfoBefore
+    showingTooManyWarning = false
+  }
 
   function onmarker(acc, x) {
     acc[x.uid] = true
