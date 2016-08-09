@@ -1,11 +1,14 @@
 'use strict'
 
+const locations = {
+    houston: [ 29.593211, -95.226382 ]
+  , gila_nf: [ 33.311654,  -108.884622 ]
+}
+
 exports.getCurrentLatLng = function getCurrentLatLng(cb) {
   if (require('../testing')) {
-    return cb(null, {
-        lat: 33.311654
-      , lng: -108.884622
-    })
+    const loc = locations.houston
+    return cb(null, { lat: loc[0], lng: loc[1] })
   }
   if (!('geolocation' in navigator)) return cb(new Error('No geolocation support'))
   function onposition(p) {

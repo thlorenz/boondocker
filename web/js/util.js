@@ -31,3 +31,7 @@ exports.addToHomeScreen = function addToHomeScreen() {
   }
   window.addToHomescreen(opts)
 }
+
+exports.locationsEqual = function locationsEqual(p1, p2) {
+  return p1.lat === p2.lat && p1.lng === p2.lng
+}

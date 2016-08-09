@@ -6,6 +6,7 @@ const EventEmitter = require('events').EventEmitter
 const getCurrentLatLng = require('./location').getCurrentLatLng
 
 const createCampsiteMarker = require('./google-marker.campsite')
+const createUserMarker = require('./google-marker.user')
 
 const debug_marker_add = require('debug')('map:marker:add')
 const debug_marker_rm = require('debug')('map:marker:rm')
@@ -42,7 +43,7 @@ const scaling = [
  * and/or mocks for quicker testing.
  */
 class GoogleMap extends EventEmitter {
-  constructor({ getElement, getQuickinfo, getOpenGoogleMaps, zoom = 8 }) {
+  constructor({ getElement, getQuickinfo, getOpenGoogleMaps, zoom = 10 }) {
     super()
     this._getElement = getElement
     this._getQuickinfo = getQuickinfo
@@ -117,6 +118,10 @@ class GoogleMap extends EventEmitter {
   }
 
   _onmapIdle() {
+    getCurrentLatLng((err, latlng) => {
+      if (err) return console.error(err)
+      this._userMarker.updateMarkerPosition({ position: latlng })
+    })
     this.emit('idle')
   }
   _onzoomChanged() {
@@ -141,6 +146,7 @@ class GoogleMap extends EventEmitter {
 
     this._map.controls[maps.ControlPosition.TOP].push(this._quickinfo)
     this._map.controls[maps.ControlPosition.BOTTOM_RIGHT].push(this._openGoogleMaps)
+    this._userMarker = createUserMarker({ map: this._map, position: latlng })
 
     this._map.addListener('idle', () => this._onmapIdle())
     this._map.addListener('zoom-changed', () => this._onzoomChanged())
