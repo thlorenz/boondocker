@@ -5,113 +5,11 @@
 const EventEmitter = require('events').EventEmitter
 const getCurrentLatLng = require('./location').getCurrentLatLng
 
+const createCampsiteMarker = require('./google-marker.campsite')
+
 const debug_marker_add = require('debug')('map:marker:add')
 const debug_marker_rm = require('debug')('map:marker:rm')
 const debug_marker_ref = require('debug')('map:marker:ref')
-
-const prices = {
-    free           : [ 'yellow', 'black' ]
-  , supercheap     : [ 'orange', 'black' ]
-  , cheap          : [ 'red', 'black' ]
-  , normal         : [ 'blue', 'black' ]
-  , expensive      : [ 'darkblue', 'transparent' ]
-  , very_expensive : [ '#000033', 'transparent' ]
-  , prohibitive    : [ 'darkgreen', 'transparent' ]
-  , unknown        : [ 'white', 'transparent' ]
-}
-
-function saveWidget({ el, place }) {
-  return new google.maps.SaveWidget(el, {
-      place
-    , attribution: {
-          source: 'boondocker'
-        , webUrl: 'https://thlorenz.com/boondocker/web/'
-      }
-  })
-}
-
-class GoogleMarker extends EventEmitter {
-  constructor({ id, position, type, price, info, map }) {
-    super()
-    this.id       = id
-    this.position = position
-    this.type     = type
-    this.price    = price
-    this.info     = info
-    this._map     = map
-    this._currentScale = -1
-    this._createMarker()
-  }
-
-  get title()       { return this.info.title }
-  get lat()         { return this.position.lat }
-  get lng()         { return this.position.lng }
-  get contact()     { return this.info.contact }
-  get description() { return this.info.summary.description }
-  get directions()  { return this.info.summary.directions }
-  get url()         { return this.info.url }
-  get fee()         { return this.info.fee }
-
-  removeFromMap() {
-    this._marker.setMap(null)
-  }
-
-  updateMarkerIcon({ selected = false, force = false } = {}) {
-    const maps = google.maps
-    // if scale didn't change there is no reason to update anything
-    if (this._currentScale === this._map.scale && !force) return false
-    this._currentScale = this._map.scale
-
-    const path = maps.SymbolPath.CIRCLE
-
-    const color = prices[this.price] || [ 'transparent', 'transparent' ]
-
-    this._marker.setIcon({
-        path
-      , scale        : this._map.scale
-      , fillColor    : selected ? 'aqua' : color[0]
-      , fillOpacity  : 0.7
-      , strokeColor  : color[1]
-      , strokeWeight : 1
-    })
-    return true
-  }
-
-  addInfo(el) {
-    this._saveWidget = saveWidget({ el, place: this._place })
-  }
-
-  unselect() {
-    this.updateMarkerIcon({ selected: false, force: true })
-  }
-
-  select() {
-    this.updateMarkerIcon({ selected: true, force: true })
-  }
-
-  _infoWindowContent() {
-    return `
-    <div class="info-window-content">
-      <span class="fee">$${this.fee}</span>
-      <h4 class="title">${this.title}</h4>
-    </div>
-    `
-  }
-
-  _createMarker() {
-    const maps = google.maps
-    this._place = {
-        location : new maps.LatLng(this.position.lat, this.position.lng)
-      , query    : this.title
-    }
-    this._marker = new maps.Marker({
-        place: this._place
-      , draggable : false
-      , zIndex    : 1
-    })
-    maps.event.addListener(this._marker, 'click', () => this.emit('clicked'))
-  }
-}
 
 const scaling = [
     0
@@ -180,7 +78,7 @@ class GoogleMap extends EventEmitter {
   updateMarker({ id, position, type, price, info }) {
     const existingMarker = this._markers[id]
     const marker = existingMarker ||
-      new GoogleMarker({ id, position, type, price, info, map: this })
+      createCampsiteMarker({ id, position, type, price, info, map: this })
 
     marker.updateMarkerIcon()
 
