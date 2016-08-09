@@ -43,11 +43,12 @@ const scaling = [
  * and/or mocks for quicker testing.
  */
 class GoogleMap extends EventEmitter {
-  constructor({ getElement, getQuickinfo, getOpenGoogleMaps, zoom = 10 }) {
+  constructor({ getElement, getQuickinfo, getOpenGoogleMaps, getMyLocation, zoom = 10 }) {
     super()
     this._getElement = getElement
     this._getQuickinfo = getQuickinfo
     this._getOpenGoogleMaps = getOpenGoogleMaps
+    this._getMyLocation = getMyLocation
     this._zoom = zoom
     this._markers = new Map()
   }
@@ -117,13 +118,18 @@ class GoogleMap extends EventEmitter {
     return scaling[this._map.getZoom()]
   }
 
-  _onmapIdle() {
+  _updateUserLocation() {
     getCurrentLatLng((err, latlng) => {
       if (err) return console.error(err)
       this._userMarker.updateMarkerPosition({ position: latlng })
     })
+  }
+
+  _onmapIdle() {
+    this._updateUserLocation()
     this.emit('idle')
   }
+
   _onzoomChanged() {
     this.emit('zoom-changed')
   }
@@ -133,6 +139,7 @@ class GoogleMap extends EventEmitter {
     this._el = this._getElement()
     this._quickinfo = this._getQuickinfo()
     this._openGoogleMaps = this._getOpenGoogleMaps()
+    this._mylocation = this._getMyLocation()
 
     this._map = new maps.Map(this._el, {
         center                : latlng
@@ -146,11 +153,23 @@ class GoogleMap extends EventEmitter {
 
     this._map.controls[maps.ControlPosition.TOP].push(this._quickinfo)
     this._map.controls[maps.ControlPosition.BOTTOM_RIGHT].push(this._openGoogleMaps)
+    this._map.controls[maps.ControlPosition.RIGHT_BOTTOM].push(this._mylocation)
     this._userMarker = createUserMarker({ map: this._map, position: latlng })
 
     this._map.addListener('idle', () => this._onmapIdle())
     this._map.addListener('zoom-changed', () => this._onzoomChanged())
     this.emit('initialized')
+
+    this._mylocation.addEventListener('click', () => this._recenter())
+    this._mylocation.getElementsByTagName('img').item(0).addEventListener('click', () => this._recenter())
+    setInterval(() => this._updateUserLocation, 2000)
+  }
+
+  _recenter() {
+    getCurrentLatLng((err, latlng) => {
+      if (err) return console.error(err)
+      this._map.panTo(latlng)
+    })
   }
 }
 

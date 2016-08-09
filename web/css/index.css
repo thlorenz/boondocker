@@ -152,3 +152,14 @@
   width: 38px;
   margin-bottom: 5px;
 }
+
+.mylocation {
+  cursor: pointer;
+}
+
+.mylocation img {
+  width: 28px;
+  height: 29px;
+  cursor: pointer;
+  margin-right: 10px;
+}

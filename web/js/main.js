@@ -209,6 +209,7 @@ function initMap() {
       getElement: () => document.getElementById('map')
     , getQuickinfo: () => document.getElementById('quickinfo')
     , getOpenGoogleMaps: () => document.getElementById('open-googlemaps')
+    , getMyLocation: () => document.getElementById('mylocation')
   })
   map.init()
   map.on('idle', updateMap)
