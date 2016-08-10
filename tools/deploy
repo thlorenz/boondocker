@@ -1,16 +1,35 @@
 #!/bin/sh
 
-CURRENT_BRANCH=`git rev-parse --abbrev-ref HEAD`
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
-rm -rf web/index.html web/build/bundle.js           && \
-git checkout gh-pages                               && \
-git reset --hard master                             && \
-make data                                           && \
-make bundle-min                                     && \
-make index                                          && \
-git add -f web/index.html web/build/bundle.js       && \
-git add -f web/build/data.js                        && \
-git commit -m "ghp: adding bundles and index.html"  && \
-git push -f origin gh-pages                         && \
-make clean                                          && \
-git checkout $CURRENT_BRANCH
+ROOT=$DIR/..
+WEB=$ROOT/web
+BUILD=$WEB/build
+DEPLOY=$ROOT/../boondocker-deploy
+DEPLOY_BUILD=$DEPLOY/build
+
+echo Cleaning build folder                              && \
+rm -rf web/index.html web/build/bundle.js               && \
+echo Switching to no test mode                          && \
+echo "module.exports = false" > $WEB/js/testing.js      && \
+echo Generating bundle, index.html and data if needed   && \
+make -C $ROOT bundle-min                                && \
+make -C $ROOT index                                     && \
+[ -f $BUILD/data.js ] || make -C $ROOT data             && \
+echo Cleaning old deploy                                && \
+rm -rf $DEPLOY/*                                        && \
+echo Copying files to deploy                            && \
+mkdir -p $DEPLOY_BUILD                                  && \
+cp -R $WEB/css $DEPLOY/css                              && \
+cp -R $WEB/img $DEPLOY/img                              && \
+cp -R $WEB/deps $DEPLOY/deps                            && \
+cp $WEB/{index.html,favicon.ico} $DEPLOY                && \
+cp $BUILD/* $DEPLOY_BUILD/                              && \
+git co $WEB/js/testing.js                               && \
+echo Deploying ...                                      && \
+(cd $DEPLOY                                             && \
+  git reset -- README.md                                && \
+  git checkout -- README.md                             && \
+  git add .                                             && \
+  git commit -m "deploy at `date +'%Y/%m/%d %H:%M:%S'`" && \
+  git push origin gh-pages)
